@@ -833,7 +833,7 @@ function syncControls(){
 function setListMode(on){
   document.body.classList.toggle('listmode', on);
   $('#dm').classList.remove('open');
-  (on ? $('#listMain') : $('.dpanel')).appendChild($('#detail'));
+  (on ? $('#listMain') : $('#dm .dpanel')).appendChild($('#detail'));
   $('#viewBtn').textContent = on ? 'Catalog view' : 'List view';
   if (state.cls === 'sold' && !on) state.cls = '';
   syncControls();
