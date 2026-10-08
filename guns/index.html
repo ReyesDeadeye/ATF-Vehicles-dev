@@ -50,6 +50,15 @@
   .aimbar .hint{color:var(--ink-3);font-size:12px}
   .tog{display:flex;align-items:center;gap:7px;color:var(--ink-2);cursor:pointer;user-select:none;font-size:13px}
   .tog input{accent-color:var(--wine-2);width:16px;height:16px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{border:0;background:var(--panel);color:var(--ink-2);padding:0 12px;height:30px;font-weight:700;font-size:13px}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button[aria-pressed="true"]{background:var(--wine);color:#fff}
+  .aimbar .sep{width:1px;height:24px;background:var(--line)}
+  .parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+  .parts div{border:1px solid var(--line);border-radius:4px;padding:8px;text-align:center}
+  .parts b{display:block;font-size:20px;color:var(--wine-3);font-variant-numeric:tabular-nums}
+  .parts span{font-size:11px;color:var(--ink-3)}
 
   .bar2{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 22px 4px}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -61,6 +70,7 @@
   select{background:var(--panel);border:1px solid var(--line);border-radius:6px;height:32px;padding:0 8px;color:var(--ink)}
   .count{color:var(--ink-3);font-size:12px;padding:4px 22px 10px}
 
+  [hidden]{display:none!important}
   main{padding:0 22px 30px}
   #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
   .card{position:relative;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px 12px 12px;display:flex;flex-direction:column;gap:2px;color:var(--ink)}
@@ -165,8 +175,9 @@
     .sheet{border-radius:0;min-height:100vh;border:0}
     .dhead,.dbody{padding-left:16px;padding-right:16px}
     .dpic{margin-left:16px;margin-right:16px}
-    .lv{width:28px;height:28px}
+    .lv{width:26px;height:28px;font-size:13px}
     .card .cmp{opacity:1}
+    .aimbar .sep{display:none}
   }
 </style>
 </head>
@@ -182,10 +193,13 @@
   </div>
 </header>
 <div class="aimbar">
+  <span class="lbl">Shooting at</span>
+  <div class="seg" id="mode"><button data-m="pve">Zombies</button><button data-m="pvp">Players</button></div>
+  <span class="sep"></span>
   <span class="lbl">Your Aiming level</span>
   <div class="levels" id="levels"></div>
   <label class="tog"><input type="checkbox" id="marks"> Marksman trait</label>
-  <span class="hint">Aiming raises hit chance, crit chance and range and cuts recoil. It does not change bullet damage.</span>
+  <span class="hint" id="hint"></span>
 </div>
 <div class="bar2">
   <div class="chips" id="chips"></div>
@@ -195,7 +209,7 @@
       <option value="cat">Sort: type</option>
       <option value="dmg">Sort: most damage</option>
       <option value="hit">Sort: best hit chance</option>
-      <option value="crit">Sort: best crit chance</option>
+      <option value="crit" id="critOpt">Sort: best crit chance</option>
       <option value="range">Sort: longest range</option>
       <option value="mag">Sort: biggest magazine</option>
       <option value="noise">Sort: quietest</option>
@@ -213,14 +227,14 @@
 <div class="modal" id="modal" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
 
 <script id="data" type="application/json">[{"id":"Pistol3","name":"B-F Pistol","mod":"Vanilla Weapons Plus","cat":"Pistol","cal":".44 Magnum","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":8,"magType":"B-F Magazine","mags":[],"ammo":[{"name":".44 Magnum","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":17.0,"minRange":0.61,"sMin":2.0,"sMax":6.0,"aimTime":25.0,"reload":30.0,"recoil":17.0,"jam":1.0,"cond":10,"condLower":200,"noise":120,"weight":2.0,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":9.0,"knock":2.0,"twoHand":false,"att":[{"id":"TritiumSights","name":"Tritium Pistol Sights","type":"Scope","fx":{"aim":-3.0,"sight":[2.0,6.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"GunLight","name":"Gun Light","type":"Canon","fx":{"aim":5.0,"weight":0.2}},{"id":"Heavy_Pistol_Silencer","name":"Heavy Pistol Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}}]},{"id":"PistolGlock","name":"Glock 17 Pistol","mod":"Vanilla Weapons Plus","cat":"Pistol","cal":"9mm","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":15,"magType":"M9 Magazine","mags":[],"ammo":[{"name":"9mm","mult":1.0}],"dmin":0.7,"dmax":0.9,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":3.0,"aimCrit":4.0,"aimRange":0.0,"range":15.0,"minRange":0.61,"sMin":2.0,"sMax":6.0,"aimTime":15.0,"reload":30.0,"recoil":12.0,"jam":1.2,"cond":10,"condLower":200,"noise":100,"weight":1.3,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":5.0,"knock":2.0,"twoHand":false,"att":[{"id":"TritiumSights","name":"Tritium Pistol Sights","type":"Scope","fx":{"aim":-3.0,"sight":[2.0,6.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"GunLight","name":"Gun Light","type":"Canon","fx":{"aim":5.0,"weight":0.2}},{"id":"Pistol_Silencer","name":"Pistol Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}}]},{"id":"Pistol2","name":"M1911 Pistol","mod":"Vanilla Weapons Plus","cat":"Pistol","cal":".45 ACP","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":7,"magType":"M1911 Auto Magazine","mags":[],"ammo":[{"name":".45 ACP","mult":1.0}],"dmin":0.9,"dmax":1.2,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":12.0,"minRange":0.61,"sMin":2.0,"sMax":6.0,"aimTime":25.0,"reload":30.0,"recoil":15.0,"jam":1.0,"cond":10,"condLower":200,"noise":70,"weight":1.5,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":7.0,"knock":2.0,"twoHand":false,"att":[{"id":"TritiumSights","name":"Tritium Pistol Sights","type":"Scope","fx":{"aim":-3.0,"sight":[2.0,6.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"GunLight","name":"Gun Light","type":"Canon","fx":{"aim":5.0,"weight":0.2}},{"id":"Pistol_Silencer","name":"Pistol Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}}]},{"id":"Pistol","name":"M9 Pistol","mod":"Vanilla Weapons Plus","cat":"Pistol","cal":"9mm","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":15,"magType":"M9 Magazine","mags":[],"ammo":[{"name":"9mm","mult":1.0}],"dmin":0.6,"dmax":1.0,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":15.0,"minRange":0.61,"sMin":2.0,"sMax":6.0,"aimTime":25.0,"reload":30.0,"recoil":12.0,"jam":1.0,"cond":10,"condLower":200,"noise":100,"weight":1.5,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":5.0,"knock":2.0,"twoHand":false,"att":[{"id":"TritiumSights","name":"Tritium Pistol Sights","type":"Scope","fx":{"aim":-3.0,"sight":[2.0,6.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"GunLight","name":"Gun Light","type":"Canon","fx":{"aim":5.0,"weight":0.2}},{"id":"Pistol_Silencer","name":"Pistol Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}}]},{"id":"Pistolm93r","name":"M93R Pistol","mod":"Vanilla Weapons Plus","cat":"Pistol","cal":"9mm","action":null,"modes":["Single","Burst"],"rpm":950,"burst":3,"mag":15,"magType":"M9 Magazine","mags":[],"ammo":[{"name":"9mm","mult":1.0}],"dmin":0.6,"dmax":1.0,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":5.0,"aimRange":0.0,"range":15.0,"minRange":0.61,"sMin":2.0,"sMax":6.0,"aimTime":30.0,"reload":30.0,"recoil":12.0,"jam":1.5,"cond":10,"condLower":200,"noise":100,"weight":1.5,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":5.0,"knock":2.0,"twoHand":false,"att":[{"id":"TritiumSights","name":"Tritium Pistol Sights","type":"Scope","fx":{"aim":-3.0,"sight":[2.0,6.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"GunLight","name":"Gun Light","type":"Canon","fx":{"aim":5.0,"weight":0.2}},{"id":"Pistol_Silencer","name":"Pistol Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}}]},{"id":"Revolver_Long","name":"Magnum","mod":"Vanilla","cat":"Revolver","cal":".44 Magnum","action":"Revolver","modes":["Single"],"rpm":null,"burst":null,"mag":6,"magType":null,"mags":[],"ammo":[{"name":".44 Magnum","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":18.0,"minRange":0.61,"sMin":2.0,"sMax":6.5,"aimTime":25.0,"reload":30.0,"recoil":17.0,"jam":0.0,"cond":10,"condLower":200,"noise":120,"weight":2.0,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":12.0,"knock":2.0,"twoHand":false,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}}]},{"id":"Revolver","name":"Patrol Revolver","mod":"Vanilla","cat":"Revolver","cal":".357 Magnum","action":"Revolver","modes":["Single"],"rpm":null,"burst":null,"mag":6,"magType":null,"mags":[],"ammo":[{"name":".357 Magnum","mult":1.0},{"name":".38 Special","mult":0.8}],"dmin":0.95,"dmax":1.4,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":12.0,"minRange":0.61,"sMin":2.0,"sMax":6.0,"aimTime":25.0,"reload":30.0,"recoil":16.0,"jam":0.0,"cond":10,"condLower":200,"noise":100,"weight":1.5,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":9.0,"knock":2.0,"twoHand":false,"att":[]},{"id":"Revolver_Short","name":"SN38 Revolver","mod":"Vanilla","cat":"Revolver","cal":".38 Special","action":"Revolver","modes":["Single"],"rpm":null,"burst":null,"mag":5,"magType":null,"mags":[],"ammo":[{"name":".357 Magnum","mult":1.0},{"name":".38 Special","mult":0.8}],"dmin":0.5,"dmax":0.8,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":8.0,"minRange":0.61,"sMin":2.0,"sMax":5.0,"aimTime":25.0,"reload":30.0,"recoil":11.0,"jam":0.0,"cond":10,"condLower":200,"noise":60,"weight":1.2,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":5.0,"knock":2.0,"twoHand":false,"att":[]},{"id":"JS5_smg","name":"JS5 SMG","mod":"Vanilla Weapons Plus","cat":"SMG","cal":"9mm","action":null,"modes":["Auto","Single","Burst"],"rpm":850,"burst":3,"mag":30,"magType":"JS5 20-Round Magazine","mags":[],"ammo":[{"name":"9mm","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":40.0,"reload":25.0,"recoil":15.0,"jam":1.0,"cond":10,"condLower":200,"noise":150,"weight":4.0,"pellets":1,"spread":null,"targets":2,"pierce":true,"stop":2.0,"knock":4.0,"twoHand":true,"att":[]},{"id":"MP5_SMG","name":"MP5 SMG","mod":"Vanilla Weapons Plus","cat":"SMG","cal":"9mm","action":null,"modes":["Auto","Single","Burst"],"rpm":850,"burst":3,"mag":30,"magType":"9mm 25-Round Magazine","mags":[["9mm 25-Round Magazine",25],["9mm 30-Round Magazine",30],["9mm 40-Round Magazine",40],["9mm 100-Round Magazine",100]],"ammo":[{"name":"9mm","mult":1.0}],"dmin":0.6,"dmax":1.0,"crit":15.0,"critx":3.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":20.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":40.0,"reload":25.0,"recoil":15.0,"jam":1.1,"cond":10,"condLower":200,"noise":125,"weight":2.6,"pellets":1,"spread":null,"targets":2,"pierce":false,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}},{"id":"GunLight","name":"Gun Light","type":"Canon","fx":{"aim":5.0,"weight":0.2}}]},{"id":"MP5SD_SMG","name":"MP5SD SMG","mod":"Vanilla Weapons Plus","cat":"SMG","cal":"9mm","action":null,"modes":["Auto","Single","Burst"],"rpm":850,"burst":3,"mag":30,"magType":"9mm 25-Round Magazine","mags":[["9mm 25-Round Magazine",25],["9mm 30-Round Magazine",30],["9mm 40-Round Magazine",40],["9mm 100-Round Magazine",100]],"ammo":[{"name":"9mm","mult":1.0}],"dmin":0.5,"dmax":0.9,"crit":15.0,"critx":3.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":20.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":40.0,"reload":25.0,"recoil":15.0,"jam":1.2,"cond":10,"condLower":200,"noise":60,"weight":2.5,"pellets":1,"spread":null,"targets":2,"pierce":false,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}},{"id":"GunLight","name":"Gun Light","type":"Canon","fx":{"aim":5.0,"weight":0.2}}]},{"id":"AssaultRifleAK47","name":"AK-47 Assault Rifle","mod":"Vanilla Weapons Plus","cat":"Assault rifle","cal":"7.62x39mm","action":null,"modes":["Auto","Single"],"rpm":null,"burst":null,"mag":30,"magType":"7.62x39mm 30-Round Magazine","mags":[["7.62x39mm 30-Round Magazine",30],["7.62x39mm 75-Round Magazine",75]],"ammo":[{"name":"7.62x39mm","mult":1.0}],"dmin":1.1,"dmax":1.7,"crit":22.0,"critx":4.0,"hit":45.0,"aimHit":4.0,"aimCrit":5.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":45.0,"reload":25.0,"recoil":15.0,"jam":0.8,"cond":10,"condLower":250,"noise":150,"weight":4.0,"pellets":1,"spread":null,"targets":2,"pierce":true,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}},{"id":"AR_Silencer","name":"Assault Rifle Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}},{"id":"762Muzzle","name":"7.62x39mm Rifle Muzzle","type":"Muzzle","fx":{"weight":0.3,"noise":0.99}}]},{"id":"AC556","name":"JS-556 Rifle","mod":"Vanilla Weapons Plus","cat":"Assault rifle","cal":"5.56mm","action":null,"modes":["Auto","Single"],"rpm":750,"burst":null,"mag":30,"magType":"JS14 20-Round Magazine","mags":[["JS14 20-Round Magazine",20],["JS14 30-Round Magazine",30]],"ammo":[{"name":"5.56mm","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":15.0,"critx":4.0,"hit":45.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":45.0,"reload":25.0,"recoil":15.0,"jam":2.0,"cond":10,"condLower":200,"noise":150,"weight":3.2,"pellets":1,"spread":null,"targets":2,"pierce":true,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}}]},{"id":"AssaultRifle","name":"M16A2 Assault Rifle","mod":"Vanilla Weapons Plus","cat":"Assault rifle","cal":"5.56mm","action":null,"modes":["Burst","Single"],"rpm":800,"burst":3,"mag":30,"magType":"5.56mm 30-Round Magazine","mags":[["5.56mm 20-Round Magazine",20],["5.56mm 30-Round Magazine",30],["5.56mm 75-Round Magazine",75]],"ammo":[{"name":"5.56mm","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":40.0,"reload":25.0,"recoil":15.0,"jam":1.0,"cond":10,"condLower":200,"noise":150,"weight":4.0,"pellets":1,"spread":null,"targets":2,"pierce":true,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}},{"id":"AR_Silencer","name":"Assault Rifle Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}}]},{"id":"AssaultRifleA3","name":"M16A3 Assault Rifle","mod":"Vanilla Weapons Plus","cat":"Assault rifle","cal":"5.56mm","action":null,"modes":["Auto","Single"],"rpm":800,"burst":null,"mag":30,"magType":"5.56mm 30-Round Magazine","mags":[["5.56mm 20-Round Magazine",20],["5.56mm 30-Round Magazine",30],["5.56mm 75-Round Magazine",75]],"ammo":[{"name":"5.56mm","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":40.0,"reload":25.0,"recoil":15.0,"jam":1.0,"cond":10,"condLower":200,"noise":150,"weight":4.0,"pellets":1,"spread":null,"targets":2,"pierce":true,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}},{"id":"AR_Silencer","name":"Assault Rifle Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}},{"id":"556Muzzle","name":"5.56x45mm Rifle Muzzle","type":"Muzzle","fx":{"weight":0.3,"noise":0.99}}]},{"id":"AssaultRifleM4","name":"M4 Carbine","mod":"Vanilla Weapons Plus","cat":"Assault rifle","cal":"5.56mm","action":null,"modes":["Auto","Single"],"rpm":800,"burst":null,"mag":30,"magType":"5.56mm 30-Round Magazine","mags":[["5.56mm 20-Round Magazine",20],["5.56mm 30-Round Magazine",30],["5.56mm 75-Round Magazine",75]],"ammo":[{"name":"5.56mm","mult":1.0}],"dmin":0.9,"dmax":1.5,"crit":18.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":5.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":45.0,"reload":25.0,"recoil":15.0,"jam":1.0,"cond":10,"condLower":200,"noise":150,"weight":3.2,"pellets":1,"spread":null,"targets":2,"pierce":true,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}},{"id":"AR_Silencer","name":"Assault Rifle Silencer","type":"Muzzle","fx":{"weight":1.0,"noise":0.3,"dmgx":0.9}},{"id":"556Muzzle","name":"5.56x45mm Rifle Muzzle","type":"Muzzle","fx":{"weight":0.3,"noise":0.99}}]},{"id":"JS14_Rifle","name":"JS-14 Rifle","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":"5.56mm","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":20,"magType":"JS14 20-Round Magazine","mags":[["JS14 20-Round Magazine",20],["JS14 30-Round Magazine",30]],"ammo":[{"name":"5.56mm","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":45.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":40.0,"reload":25.0,"recoil":15.0,"jam":2.0,"cond":10,"condLower":200,"noise":150,"weight":3.5,"pellets":1,"spread":null,"targets":2,"pierce":true,"stop":2.0,"knock":4.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}}]},{"id":"L92_Carbine","name":"L92 Carbine","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":".357 Magnum","action":"Lever action","modes":["Single"],"rpm":null,"burst":null,"mag":10,"magType":null,"mags":[],"ammo":[{"name":".357 Magnum","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":24.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":50.0,"reload":25.0,"recoil":12.0,"jam":1.0,"cond":10,"condLower":200,"noise":120,"weight":3.5,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":12.0,"knock":2.0,"twoHand":true,"att":[{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}}]},{"id":"L94_Rifle","name":"L94 Rifle","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":".30-30","action":"Lever action","modes":["Single"],"rpm":null,"burst":null,"mag":6,"magType":null,"mags":[],"ammo":[{"name":".30-30","mult":1.0}],"dmin":1.2,"dmax":2.0,"crit":25.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":40.0,"reload":25.0,"recoil":20.0,"jam":1.0,"cond":10,"condLower":200,"noise":160,"weight":3.5,"pellets":1,"spread":null,"targets":1,"pierce":true,"stop":16.0,"knock":2.0,"twoHand":true,"att":[{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}}]},{"id":"AssaultRifle2","name":"M1A Rifle","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":".308","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":20,"magType":"M1A Magazine","mags":[],"ammo":[{"name":".308","mult":1.0}],"dmin":1.2,"dmax":2.0,"crit":30.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":40.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":50.0,"reload":25.0,"recoil":20.0,"jam":1.0,"cond":10,"condLower":200,"noise":170,"weight":4.5,"pellets":1,"spread":null,"targets":1,"pierce":true,"stop":2.0,"knock":2.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}}]},{"id":"VarmintRifle","name":"MSR700 Rifle","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":"5.56mm","action":"Bolt action","modes":["Single"],"rpm":null,"burst":null,"mag":5,"magType":null,"mags":[],"ammo":[{"name":"5.56mm","mult":1.0}],"dmin":1.0,"dmax":1.6,"crit":20.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":30.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":50.0,"reload":25.0,"recoil":17.0,"jam":1.0,"cond":10,"condLower":200,"noise":150,"weight":4.0,"pellets":1,"spread":null,"targets":1,"pierce":true,"stop":15.0,"knock":2.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"x8Scope","name":"x8 Scope","type":"Scope","fx":{"aim":20.0,"weight":0.8,"sight":[15.0,22.0]}},{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}}]},{"id":"HuntingRifle","name":"MSR788 Rifle","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":".308","action":"Bolt action","modes":["Single"],"rpm":null,"burst":null,"mag":4,"magType":null,"mags":[],"ammo":[{"name":".308","mult":1.0}],"dmin":1.2,"dmax":2.0,"crit":30.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":40.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":60.0,"reload":25.0,"recoil":23.0,"jam":1.0,"cond":10,"condLower":200,"noise":170,"weight":4.0,"pellets":1,"spread":null,"targets":1,"pierce":true,"stop":20.0,"knock":2.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"x8Scope","name":"x8 Scope","type":"Scope","fx":{"aim":20.0,"weight":0.8,"sight":[15.0,22.0]}},{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}}]},{"id":"MSR7T_Rifle","name":"MSR7T Tactical Rifle","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":".308","action":"Bolt action","modes":["Single"],"rpm":null,"burst":null,"mag":4,"magType":null,"mags":[],"ammo":[{"name":".308","mult":1.0}],"dmin":1.2,"dmax":2.0,"crit":35.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":40.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":65.0,"reload":25.0,"recoil":21.0,"jam":1.0,"cond":10,"condLower":200,"noise":170,"weight":4.5,"pellets":1,"spread":null,"targets":1,"pierce":true,"stop":20.0,"knock":2.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"x8Scope","name":"x8 Scope","type":"Scope","fx":{"aim":20.0,"weight":0.8,"sight":[15.0,22.0]}},{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}}]},{"id":"SR25_Rifle","name":"SR-25 Rifle","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":".308","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":20,"magType":"7.62x51mm 10-Round Magazine","mags":[["7.62x51mm 10-Round Magazine",10],["7.62x51mm 20-Round Magazine",20]],"ammo":[{"name":".308","mult":1.0}],"dmin":1.0,"dmax":1.8,"crit":25.0,"critx":3.5,"hit":50.0,"aimHit":4.0,"aimCrit":4.0,"aimRange":0.0,"range":40.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":45.0,"reload":25.0,"recoil":20.0,"jam":0.8,"cond":10,"condLower":200,"noise":170,"weight":4.5,"pellets":1,"spread":null,"targets":1,"pierce":true,"stop":2.0,"knock":2.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}}]},{"id":"TrapperCarbine","name":"Trapper Carbine","mod":"Vanilla Weapons Plus","cat":"Rifle","cal":".45 ACP","action":null,"modes":["Single"],"rpm":null,"burst":null,"mag":7,"magType":"M1911 Auto Magazine","mags":[],"ammo":[{"name":".45 ACP","mult":1.0}],"dmin":1.0,"dmax":1.4,"crit":22.0,"critx":4.0,"hit":50.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0.0,"range":20.0,"minRange":0.61,"sMin":2.0,"sMax":10.0,"aimTime":35.0,"reload":25.0,"recoil":12.0,"jam":2.0,"cond":10,"condLower":180,"noise":70,"weight":3.2,"pellets":1,"spread":null,"targets":1,"pierce":false,"stop":8.0,"knock":2.0,"twoHand":true,"att":[{"id":"x2Scope","name":"x2 Scope","type":"Scope","fx":{"aim":5.0,"weight":0.3,"sight":[4.0,12.0]}},{"id":"x4Scope","name":"x4 Scope","type":"Scope","fx":{"aim":10.0,"weight":0.4,"sight":[8.0,16.0]}},{"id":"Laser","name":"Laser Sight","type":"Canon","fx":{"aim":-10.0,"hit":5.0,"weight":0.6}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}}]},{"id":"DoubleBarrelShotgun","name":"Double Barrel Shotgun","mod":"Vanilla Weapons Plus","cat":"Shotgun","cal":"12 gauge","action":"Break action","modes":["Single"],"rpm":null,"burst":null,"mag":2,"magType":null,"mags":[],"ammo":[{"name":"12 gauge","mult":1.0}],"dmin":1.5,"dmax":2.2,"crit":70.0,"critx":12.0,"hit":65.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0,"range":15.0,"minRange":0.67,"sMin":3.0,"sMax":9.0,"aimTime":40.0,"reload":25.0,"recoil":30.0,"jam":0.0,"cond":10,"condLower":200,"noise":200,"weight":4.0,"pellets":9,"spread":0.6,"targets":9,"pierce":false,"stop":40.0,"knock":8.0,"twoHand":true,"att":[{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}},{"id":"ChokeTubeFull","name":"Choke Tube - Full","type":"Canon","fx":{"range":2.0,"spread":-0.4,"weight":0.1}},{"id":"ChokeTubeImproved","name":"Choke Tube - Improved","type":"Canon","fx":{"range":1.0,"spread":-0.2,"weight":0.1}}]},{"id":"Shotgun","name":"JS-2000 Shotgun","mod":"Vanilla Weapons Plus","cat":"Shotgun","cal":"12 gauge","action":"Pump action","modes":["Single"],"rpm":null,"burst":null,"mag":5,"magType":null,"mags":[],"ammo":[{"name":"12 gauge","mult":1.0}],"dmin":1.5,"dmax":2.2,"crit":70.0,"critx":12.0,"hit":65.0,"aimHit":4.0,"aimCrit":10.0,"aimRange":0,"range":12.0,"minRange":0.61,"sMin":3.0,"sMax":8.0,"aimTime":40.0,"reload":25.0,"recoil":30.0,"jam":2.0,"cond":10,"condLower":200,"noise":200,"weight":4.0,"pellets":9,"spread":1.0,"targets":9,"pierce":false,"stop":20.0,"knock":8.0,"twoHand":true,"att":[{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}},{"id":"RecoilPad","name":"Recoil Pad","type":"RecoilPad","fx":{"recoil":-2.0,"weight":0.1}},{"id":"ChokeTubeFull","name":"Choke Tube - Full","type":"Canon","fx":{"range":2.0,"spread":-0.4,"weight":0.1}},{"id":"ChokeTubeImproved","name":"Choke Tube - Improved","type":"Canon","fx":{"range":1.0,"spread":-0.2,"weight":0.1}}]},{"id":"JS3T_Shotgun","name":"JS-3T Tactical Shotgun","mod":"Vanilla Weapons Plus","cat":"Shotgun","cal":"12 gauge","action":"Pump action","modes":["Single"],"rpm":null,"burst":null,"mag":7,"magType":null,"mags":[],"ammo":[{"name":"12 gauge","mult":1.0}],"dmin":1.5,"dmax":2.2,"crit":70.0,"critx":12.0,"hit":65.0,"aimHit":4.0,"aimCrit":10.0,"aimRange":0,"range":12.0,"minRange":0.61,"sMin":3.0,"sMax":8.0,"aimTime":40.0,"reload":25.0,"recoil":28.0,"jam":2.0,"cond":10,"condLower":200,"noise":200,"weight":4.5,"pellets":9,"spread":1.0,"targets":9,"pierce":false,"stop":20.0,"knock":8.0,"twoHand":true,"att":[{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}},{"id":"RedDot","name":"Red Dot Sight","type":"Scope","fx":{"aim":-10.0,"weight":0.2,"sight":[2.0,10.0]}}]},{"id":"DoubleBarrelShotgunSawnoff","name":"Sawed-off Double Barrel Shotgun","mod":"Vanilla Weapons Plus","cat":"Shotgun","cal":"12 gauge","action":"Break action","modes":["Single"],"rpm":null,"burst":null,"mag":2,"magType":null,"mags":[],"ammo":[{"name":"12 gauge","mult":1.0}],"dmin":1.2,"dmax":1.8,"crit":50.0,"critx":8.0,"hit":70.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0,"range":8.0,"minRange":0.67,"sMin":3.0,"sMax":3.0,"aimTime":30.0,"reload":25.0,"recoil":34.0,"jam":0.0,"cond":10,"condLower":200,"noise":200,"weight":3.0,"pellets":9,"spread":2.0,"targets":9,"pierce":false,"stop":40.0,"knock":8.0,"twoHand":true,"att":[]},{"id":"ShotgunSawnoff","name":"Sawed-off JS-2000 Shotgun","mod":"Vanilla Weapons Plus","cat":"Shotgun","cal":"12 gauge","action":"Pump action","modes":["Single"],"rpm":null,"burst":null,"mag":5,"magType":null,"mags":[],"ammo":[{"name":"12 gauge","mult":1.0}],"dmin":1.3,"dmax":2.0,"crit":50.0,"critx":10.0,"hit":70.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0,"range":10.0,"minRange":0.61,"sMin":3.0,"sMax":3.0,"aimTime":35.0,"reload":25.0,"recoil":30.0,"jam":2.0,"cond":10,"condLower":200,"noise":200,"weight":3.0,"pellets":9,"spread":1.5,"targets":9,"pierce":false,"stop":20.0,"knock":8.0,"twoHand":true,"att":[{"id":"AmmoStraps","name":"Ammo Straps","type":"Sling","fx":{"reload":-5.0,"weight":0.5}}]},{"id":"Side_By_Side","name":"Side by Side Shotgun","mod":"Vanilla Weapons Plus","cat":"Shotgun","cal":"12 gauge","action":"Break action","modes":["Single"],"rpm":null,"burst":null,"mag":2,"magType":null,"mags":[],"ammo":[{"name":"12 gauge","mult":1.0}],"dmin":1.5,"dmax":2.2,"crit":70.0,"critx":12.0,"hit":65.0,"aimHit":4.0,"aimCrit":6.0,"aimRange":0,"range":15.0,"minRange":0.67,"sMin":3.0,"sMax":9.0,"aimTime":40.0,"reload":25.0,"recoil":30.0,"jam":0.0,"cond":10,"condLower":200,"noise":200,"weight":2.0,"pellets":9,"spread":0.6,"targets":9,"pierce":false,"stop":40.0,"knock":8.0,"twoHand":true,"att":[]}]</script>
-<script id="changelog" type="application/json">[{"v": "v1.0", "date": "2026-10-08", "items": ["First version: all 31 guns on the server (Vanilla Weapons Plus plus the vanilla revolvers) with damage, hit and crit chance, range, magazines, fire modes, reload, recoil, durability, jam chance and noise.", "Pick your Aiming level (and Marksman) at the top: hit chance, crit chance, range, sweet spot and recoil update everywhere.", "Each gun shows the attachments and magazines that fit it and what they change.", "List view to sort every gun by any stat, and Compare for up to 4 guns side by side."]}]</script>
+<script id="changelog" type="application/json">[{"v": "v1.0", "date": "2026-10-08", "items": ["First version: all 31 guns on the server (Vanilla Weapons Plus plus the vanilla revolvers) with damage, hit and crit chance, range, magazines, fire modes, reload, recoil, durability, jam chance and noise.", "Pick your Aiming level (and Marksman) at the top: hit chance, crit chance, range, sweet spot and recoil update everywhere.", "Switch between Zombies and Players at the top. Players mode shows damage vs players per body part (headshot \u00d74, chest \u00d72) and knockdown chance instead of crits.", "Each gun shows the attachments and magazines that fit it and what they change.", "List view to sort every gun by any stat, and Compare for up to 4 guns side by side."]}]</script>
 <script>
 const G = JSON.parse(document.getElementById('data').textContent);
 const LOG = JSON.parse(document.getElementById('changelog').textContent);
 const CATS = ['All','Pistol','Revolver','SMG','Assault rifle','Rifle','Shotgun'];
-const S = {aim: 0, marks: false, cat: 'All', q: '', sort: 'cat', view: 'grid', cmp: [], lsort: null, ldir: -1};
-try { const s = JSON.parse(localStorage.getItem('atfGuns') || '{}'); if (s.aim >= 0 && s.aim <= 10) S.aim = s.aim; S.marks = !!s.marks; } catch (e) {}
-const save = () => { try { localStorage.setItem('atfGuns', JSON.stringify({aim: S.aim, marks: S.marks})); } catch (e) {} };
+const S = {aim: 0, marks: false, mode: 'pve', cat: 'All', q: '', sort: 'cat', view: 'grid', cmp: [], lsort: null, ldir: -1};
+try { const s = JSON.parse(localStorage.getItem('atfGuns') || '{}'); if (s.aim >= 0 && s.aim <= 10) S.aim = s.aim; S.marks = !!s.marks; if (s.mode === 'pvp') S.mode = 'pvp'; } catch (e) {}
+const save = () => { try { localStorage.setItem('atfGuns', JSON.stringify({aim: S.aim, marks: S.marks, mode: S.mode})); } catch (e) {} };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const r1 = x => Math.round(x * 10) / 10, r2 = x => Math.round(x * 100) / 100;
@@ -237,15 +251,30 @@ function calc(g, A = S.aim, M = S.marks) {
   const recoil = Math.max(0, Math.floor(g.recoil * (1 - A / 40)));
   const critx = Math.max(2, g.critx);
   const avg = (g.dmin + g.dmax) / 2 * (1 + Math.min(crit, 100) / 100 * (critx - 1));
-  return {hit, hitBest, crit: Math.min(crit, 100), range, sMin, sMax, recoil, critx, avg};
+  // PvP (BodyDamage.DamageFromWeapon): a bullet hits one random body part out of 17 for rand(min..max) x 15,
+  // x4 on head or neck, x2 on upper torso (average over parts 24/17), then x the server's PVPFirearmDamageModifier.
+  // Crits add no damage to players; they knock the target down (if the server allows knockdowns).
+  const pvp = (g.dmin + g.dmax) / 2 * 15, pvpAvg = pvp * 24 / 17;
+  return {hit, hitBest, crit: Math.min(crit, 100), range, sMin, sMax, recoil, critx, avg, pvp, pvpAvg};
 }
+const PVP = () => S.mode === 'pvp';
+const pel = g => g.pellets > 1 ? ' ×' + g.pellets : '';
+const pvpTxt = (g, c = calc(g)) => Math.round(c.pvpAvg) + pel(g);
+const dmgVal = g => PVP() ? calc(g).pvpAvg * g.pellets : (g.dmin + g.dmax) / 2 * g.pellets;
+const HINT = {
+  pve: 'Aiming raises hit chance, crit chance and range and cuts recoil. It does not change bullet damage.',
+  pvp: 'Against players a bullet hits a random body part. Headshots do ×4, chest ×2. Crits knock down instead of adding damage.',
+};
+function modeUi() { $('mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === S.mode)); $('hint').textContent = HINT[S.mode]; }
+function refresh() { render(); if ($('modal').classList.contains('open')) { if ($('sheet').dataset.id) openGun($('sheet').dataset.id, true); else if ($('sheet').dataset.cmp) openCompare(true); } }
+$('mode').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; S.mode = b.dataset.m; save(); modeUi(); refresh(); });
 
 function levels() {
   $('levels').innerHTML = Array.from({length: 11}, (_, i) => `<button class="lv" data-l="${i}" aria-pressed="${i === S.aim}" aria-label="Aiming ${i}">${i}</button>`).join('');
 }
-$('levels').addEventListener('click', e => { const b = e.target.closest('.lv'); if (!b) return; S.aim = +b.dataset.l; save(); levels(); render(); if ($('modal').classList.contains('open') && $('sheet').dataset.id) openGun($('sheet').dataset.id, true); if ($('sheet').dataset.cmp) openCompare(true); });
+$('levels').addEventListener('click', e => { const b = e.target.closest('.lv'); if (!b) return; S.aim = +b.dataset.l; save(); levels(); refresh(); });
 $('marks').checked = S.marks;
-$('marks').addEventListener('change', e => { S.marks = e.target.checked; save(); render(); if ($('sheet').dataset.id) openGun($('sheet').dataset.id, true); if ($('sheet').dataset.cmp) openCompare(true); });
+$('marks').addEventListener('change', e => { S.marks = e.target.checked; save(); refresh(); });
 $('chips').innerHTML = CATS.map(c => `<button class="chip" data-c="${c}" aria-pressed="${c === S.cat}">${c === 'All' ? 'All' : c + (c.endsWith('s') ? 'es' : 's')}</button>`).join('');
 $('chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; S.cat = b.dataset.c; $('chips').querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
 let qt; $('q').addEventListener('input', e => { clearTimeout(qt); qt = setTimeout(() => { S.q = e.target.value.trim().toLowerCase(); render(); }, 120); });
@@ -255,7 +284,7 @@ $('viewBtn').addEventListener('click', () => { S.view = S.view === 'grid' ? 'lis
 const SORTS = {
   cat: (a, b) => 0,
   name: (a, b) => a.name.localeCompare(b.name),
-  dmg: (a, b) => (b.dmin + b.dmax) * b.pellets - (a.dmin + a.dmax) * a.pellets,
+  dmg: (a, b) => dmgVal(b) - dmgVal(a),
   hit: (a, b) => calc(b).hit - calc(a).hit,
   crit: (a, b) => calc(b).crit - calc(a).crit,
   range: (a, b) => calc(b).range - calc(a).range,
@@ -274,7 +303,8 @@ function filtered() {
 
 function render() {
   const a = filtered();
-  $('count').textContent = `${a.length} gun${a.length === 1 ? '' : 's'} · stats shown at Aiming ${S.aim}${S.marks ? ' with Marksman' : ''}`;
+  $('count').textContent = `${a.length} gun${a.length === 1 ? '' : 's'} · stats shown at Aiming ${S.aim}${S.marks ? ' with Marksman' : ''}${PVP() ? ' · damage vs players (average body part)' : ''}`;
+  $('critOpt').textContent = PVP() ? 'Sort: best knockdown chance' : 'Sort: best crit chance';
   $('grid').hidden = S.view !== 'grid'; $('list').hidden = S.view !== 'list';
   if (S.view === 'grid') {
     $('grid').innerHTML = a.length ? a.map(g => { const c = calc(g); return `
@@ -282,13 +312,13 @@ function render() {
         <div class="top"><span class="nm">${esc(g.name)}</span><span class="cat">${esc(g.cat)}</span></div>
         <div class="sub">${esc(g.cal)} · ${magTxt(g)} rounds${g.modes.includes('Auto') ? ' · Full auto' : g.modes.includes('Burst') ? ' · Burst' : ''}</div>
         <div class="pic"><img loading="lazy" src="${pic(g, 'thumb')}" alt="${esc(g.name)}" width="400" height="200"><button class="cmp ${S.cmp.includes(g.id) ? 'on' : ''}" data-cmp="${g.id}">${S.cmp.includes(g.id) ? '✓ Comparing' : '+ Compare'}</button></div>
-        <div class="st"><div><b>${dmgTxt(g)}</b><span>Damage</span></div><div><b>${Math.round(c.hit)}%</b><span>Hit chance</span></div><div><b>${fmt(c.range)}</b><span>Range (tiles)</span></div></div>
+        <div class="st"><div><b>${PVP() ? pvpTxt(g, c) : dmgTxt(g)}</b><span>${PVP() ? 'PvP damage' : 'Damage'}</span></div><div><b>${Math.round(c.hit)}%</b><span>Hit chance</span></div><div><b>${fmt(c.range)}</b><span>Range (tiles)</span></div></div>
       </div>`; }).join('') : '<div class="empty">No guns match.</div>';
   } else renderList(a);
 }
 
-const COLS = [
-  ['Damage', g => (g.dmin + g.dmax) / 2 * g.pellets, g => dmgTxt(g)],
+const COLS_PVE = [
+  ['Damage', g => dmgVal(g), g => dmgTxt(g)],
   ['Hit %', g => calc(g).hit, g => Math.round(calc(g).hit) + '%'],
   ['Crit %', g => calc(g).crit, g => Math.round(calc(g).crit) + '%'],
   ['Crit dmg', g => calc(g).critx, g => '×' + fmt(calc(g).critx)],
@@ -301,11 +331,19 @@ const COLS = [
   ['Jam %', g => -g.jam, g => fmt(g.jam)],
   ['Weight', g => -g.weight, g => fmt(g.weight)],
 ];
+const COLS_PVP = [
+  ['PvP dmg', g => dmgVal(g), g => pvpTxt(g)],
+  ['Headshot', g => calc(g).pvp * 4 * g.pellets, g => Math.round(calc(g).pvp * 4) + pel(g)],
+  ...COLS_PVE.slice(1, 3).map((c, i) => i === 1 ? ['Knockdown %', c[1], c[2]] : c),
+  ...COLS_PVE.slice(4),
+];
+let COLS = COLS_PVE;
 function renderList(a) {
+  if (COLS !== (PVP() ? COLS_PVP : COLS_PVE)) { COLS = PVP() ? COLS_PVP : COLS_PVE; S.lsort = null; }
   if (S.lsort != null) { const f = COLS[S.lsort][1]; a = a.slice().sort((x, y) => (f(y) - f(x)) * -S.ldir); }
   $('list').innerHTML = `<div class="tw"><table class="list"><thead><tr><th>Gun</th>${COLS.map((c, i) => `<th data-i="${i}" class="${S.lsort === i ? 's' : ''}">${c[0]}${S.lsort === i ? (S.ldir < 0 ? ' ▼' : ' ▲') : ''}</th>`).join('')}</tr></thead><tbody>${
     a.map(g => `<tr data-id="${g.id}"><td><img loading="lazy" src="${pic(g, 'thumb')}" alt=""><div>${esc(g.name)}<span class="c">${esc(g.cat)} · ${esc(g.cal)}</span></div></td>${COLS.map(c => `<td>${c[2](g)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
-    <div class="note">Click a column to sort (best first). Aim time, reload and recoil: lower is faster. Noise is how far zombies hear the shot, in tiles.</div>`;
+    <div class="note">Click a column to sort (best first). Aim time, reload and recoil: lower is faster. Noise is how far zombies hear the shot, in tiles.${PVP() ? ' PvP damage is the average for a random body part; Headshot is a hit to the head or neck. Both are before the server\'s PvP damage setting, so use them to compare guns.' : ''}</div>`;
 }
 $('list').addEventListener('click', e => {
   const th = e.target.closest('th[data-i]');
@@ -348,13 +386,24 @@ function openGun(id, keep) {
     <div class="dpic"><img src="${pic(g, 'full')}" alt="${esc(g.name)}"></div>
     <div class="dbody">
       <div class="bigs">
-        <div class="big"><div class="v">${dmgTxt(g)}</div><div class="l">Damage per hit${g.pellets > 1 ? ' (per pellet)' : ''}</div></div>
+        ${PVP() ? `<div class="big"><div class="v">${Math.round(c.pvpAvg)}</div><div class="l">PvP damage per hit${g.pellets > 1 ? ' (per pellet)' : ''}</div></div>`
+          : `<div class="big"><div class="v">${dmgTxt(g)}</div><div class="l">Damage per hit${g.pellets > 1 ? ' (per pellet)' : ''}</div></div>`}
         <div class="big a"><div class="v">${Math.round(c.hit)}<small>%</small></div><div class="l">Hit chance at Aiming ${S.aim}</div></div>
-        <div class="big a"><div class="v">${Math.round(c.crit)}<small>%</small></div><div class="l">Crit chance at Aiming ${S.aim}</div></div>
+        <div class="big a"><div class="v">${Math.round(c.crit)}<small>%</small></div><div class="l">${PVP() ? 'Knockdown' : 'Crit'} chance at Aiming ${S.aim}</div></div>
         <div class="big a"><div class="v">${fmt(c.range)}<small> tiles</small></div><div class="l">Max range at Aiming ${S.aim}</div></div>
       </div>
       <div class="cols">
-        <div class="box"><h3>Damage</h3>${kv([
+        ${PVP() ? `<div class="box"><h3>Damage vs players</h3>${kv([
+          ['Body damage per hit', fmt(g.dmin * 15, 0) + '–' + fmt(g.dmax * 15, 0) + (g.pellets > 1 ? ' <small>per pellet</small>' : '')],
+          ['Average, random body part', fmt(c.pvpAvg, 1), 1],
+          g.pellets > 1 ? ['Pellets per shot', g.pellets + ' <small>(each one that lands hits a part)</small>'] : null,
+          ['Crits', 'Knockdown, no extra damage', 1],
+          ['Knockdown chance', Math.round(c.crit) + '%', 1],
+          ['Players one bullet can hit', g.targets + (g.pierce ? ' (goes through)' : '')],
+        ])}
+          <div class="parts"><div><b>${Math.round(c.pvp * 4)}</b><span>Head or neck ×4</span></div><div><b>${Math.round(c.pvp * 2)}</b><span>Chest ×2</span></div><div><b>${Math.round(c.pvp)}</b><span>Arms, legs, belly ×1</span></div></div>
+          <div class="note">Each body part has 100 health. These numbers are before the server's PvP firearm damage setting, so they are best for comparing guns. Clothing with bullet protection blocks the whole hit on that part that % of the time.</div></div>`
+        : `<div class="box"><h3>Damage</h3>${kv([
           ['Damage per hit', dmgTxt(g)],
           ['Critical hits deal', '×' + fmt(c.critx) + ' damage'],
           ['Average per hit, crits included', fmt(c.avg, 2), 1],
@@ -362,16 +411,16 @@ function openGun(id, keep) {
           ['Zombies one bullet can hit', g.targets + (g.pierce ? ' (goes through)' : '')],
           ['Knockdown power', fmt(g.knock)],
           g.ammo.length > 1 ? ['Ammo', g.ammo.map(a => `${a.name}${a.mult !== 1 ? ` <small>(${Math.round(a.mult * 100)}% dmg)</small>` : ''}`).join(', ')] : null,
-        ])}</div>
+        ])}</div>`}
         <div class="box"><h3>Accuracy at Aiming ${S.aim}${S.marks ? ' + Marksman' : ''}</h3>${kv([
           ['Hit chance', Math.round(c.hit) + '%', 1],
           ['In its sweet spot', 'up to ' + Math.round(c.hitBest) + '%', 1],
           ['Sweet spot distance', fmt(c.sMin) + '–' + fmt(c.sMax) + ' tiles', 1],
-          ['Crit chance', Math.round(c.crit) + '%', 1],
+          [PVP() ? 'Knockdown chance' : 'Crit chance', Math.round(c.crit) + '%', 1],
           ['Max range', fmt(c.range) + ' tiles', 1],
           ['Recoil delay', c.recoil + ' <small>(base ' + g.recoil + ')</small>', 1],
           ['Aim time', g.aimTime],
-          ['Per Aiming level', `+${fmt(g.aimHit)}% hit, +${fmt(g.aimCrit)}% crit${g.aimRange ? `, +${fmt(g.aimRange / 2)} range` : ''}`],
+          ['Per Aiming level', `+${fmt(g.aimHit)}% hit, +${fmt(g.aimCrit)}% ${PVP() ? 'knockdown' : 'crit'}${g.aimRange ? `, +${fmt(g.aimRange / 2)} range` : ''}`],
         ])}
           <div class="curve">${curve.map((h, A) => `<div class="${A === S.aim ? 'on' : ''}" style="height:${h}%"><span>${Math.round(h)}</span></div>`).join('')}</div>
           <div class="clab">${curve.map((_, A) => `<span>${A}</span>`).join('')}</div>
@@ -405,11 +454,19 @@ function openCompare(keep) {
   const cs = gs.map(g => calc(g));
   const rows = [
     ['Type', (g) => g.cat], ['Caliber', g => g.cal],
-    ['Damage per hit', g => dmgTxt(g), g => (g.dmin + g.dmax) / 2 * g.pellets, 1],
-    ['Avg per hit (crits incl.)', (g, c) => fmt(c.avg, 2), (g, c) => c.avg, 1],
-    [`Hit chance (Aiming ${S.aim})`, (g, c) => Math.round(c.hit) + '%', (g, c) => c.hit, 1],
-    [`Crit chance (Aiming ${S.aim})`, (g, c) => Math.round(c.crit) + '%', (g, c) => c.crit, 1],
-    ['Crit damage', (g, c) => '×' + fmt(c.critx), (g, c) => c.critx, 1],
+    ...(PVP() ? [
+      ['PvP damage per hit', (g, c) => pvpTxt(g, c), (g, c) => c.pvpAvg * g.pellets, 1],
+      ['Headshot', (g, c) => Math.round(c.pvp * 4) + pel(g), (g, c) => c.pvp * 4 * g.pellets, 1],
+      ['Chest hit', (g, c) => Math.round(c.pvp * 2) + pel(g), (g, c) => c.pvp * 2 * g.pellets, 1],
+      [`Hit chance (Aiming ${S.aim})`, (g, c) => Math.round(c.hit) + '%', (g, c) => c.hit, 1],
+      [`Knockdown chance (Aiming ${S.aim})`, (g, c) => Math.round(c.crit) + '%', (g, c) => c.crit, 1],
+    ] : [
+      ['Damage per hit', g => dmgTxt(g), g => (g.dmin + g.dmax) / 2 * g.pellets, 1],
+      ['Avg per hit (crits incl.)', (g, c) => fmt(c.avg, 2), (g, c) => c.avg, 1],
+      [`Hit chance (Aiming ${S.aim})`, (g, c) => Math.round(c.hit) + '%', (g, c) => c.hit, 1],
+      [`Crit chance (Aiming ${S.aim})`, (g, c) => Math.round(c.crit) + '%', (g, c) => c.crit, 1],
+      ['Crit damage', (g, c) => '×' + fmt(c.critx), (g, c) => c.critx, 1],
+    ]),
     [`Range (Aiming ${S.aim})`, (g, c) => fmt(c.range) + ' tiles', (g, c) => c.range, 1],
     ['Sweet spot', (g, c) => fmt(c.sMin) + '–' + fmt(c.sMax)],
     ['Magazine', g => magTxt(g), g => maxMag(g), 1],
@@ -422,7 +479,7 @@ function openCompare(keep) {
     ['Condition', g => g.cond, g => g.cond, 1],
     ['Weight', g => fmt(g.weight) + ' kg', g => g.weight, -1],
   ];
-  sh.innerHTML = `<button class="x" aria-label="Close">×</button><div class="dhead"><h2>Compare</h2><div class="tags"><span class="tag w">At Aiming ${S.aim}${S.marks ? ' + Marksman' : ''}</span><span class="tag">Best value in red</span></div></div>
+  sh.innerHTML = `<button class="x" aria-label="Close">×</button><div class="dhead"><h2>Compare</h2><div class="tags"><span class="tag w">At Aiming ${S.aim}${S.marks ? ' + Marksman' : ''}</span>${PVP() ? '<span class="tag w">Vs players</span>' : ''}<span class="tag">Best value in red</span></div></div>
     <div class="dbody"><div class="cmpw"><table class="cmpt"><thead><tr><th></th>${gs.map(g => `<th><img src="${pic(g, 'thumb')}" alt=""><div style="margin-top:6px">${esc(g.name)}</div><button class="rm" data-rm="${g.id}">remove</button></th>`).join('')}</tr></thead><tbody>
     ${rows.map(([lab, show, val, dir]) => { let best = null; if (val) { const vs = gs.map((g, i) => val(g, cs[i])); const b = dir > 0 ? Math.max(...vs) : Math.min(...vs); if (vs.some(v => v !== b)) best = b; }
       return `<tr><td>${lab}</td>${gs.map((g, i) => `<td class="${best != null && val(g, cs[i]) === best ? 'best' : ''}">${show(g, cs[i])}</td>`).join('')}</tr>`; }).join('')}
@@ -433,7 +490,7 @@ function openCompare(keep) {
 function openLog() {
   const sh = $('sheet'); delete sh.dataset.id; delete sh.dataset.cmp;
   sh.innerHTML = `<button class="x" aria-label="Close">×</button><div class="dhead"><h2>What's new</h2></div><div class="dbody log">${LOG.map(v => `<h3>${esc(v.v)}<small>${esc(v.date)}</small></h3><ul>${v.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('')}
-    <h3>About these numbers</h3><ul><li>Stats come straight from the gun mods' files and the game's own combat code, for the mod versions the server runs.</li><li>Hit and crit chance are for ideal conditions: standing still, no panic or stress, clear weather, good light. Moving, bad weather, darkness and moodles lower them in game.</li><li>Damage per hit is the gun's own number. In game it is also scaled by where the bullet lands and the server's settings.</li></ul></div>`;
+    <h3>About these numbers</h3><ul><li>Stats come straight from the gun mods' files and the game's own combat code, for the mod versions the server runs.</li><li>Hit and crit chance are for ideal conditions: standing still, no panic or stress, clear weather, good light. Moving, bad weather, darkness and moodles lower them in game.</li><li>Damage per hit is the gun's own number. In game it is also scaled by where the bullet lands and the server's settings.</li><li>Vs players: each bullet hits one random body part for the gun's damage ×15, ×4 on the head or neck and ×2 on the chest, then the server's PvP firearm damage setting is applied. Crits don't add damage to players, they knock them down. Clothing with bullet protection blocks the whole hit on that part that % of the time.</li></ul></div>`;
   $('modal').classList.add('open'); document.body.style.overflow = 'hidden'; $('modal').scrollTop = 0;
 }
 $('newBtn').addEventListener('click', openLog);
@@ -447,7 +504,7 @@ $('modal').addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('modal').classList.contains('open')) close(); });
 
-levels(); render();
+levels(); modeUi(); render();
 </script>
 </body>
 </html>
